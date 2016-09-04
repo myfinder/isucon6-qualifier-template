@@ -99,68 +99,13 @@
         "dnsSettings": {
           "dnsServers": []
         },
-        "enableIPForwarding": false,
-        "networkSecurityGroup": {
-          id: "[concat(resourceId('Microsoft.Network/networkSecurityGroups/', variables('commonName')))]"
-        }
+        "enableIPForwarding": false
       },
       "resources": [],
       "dependsOn": [
         "[resourceId('Microsoft.Network/publicIPAddresses', 'isucon6-qualifier')]",
         "[resourceId('Microsoft.Network/virtualNetworks', variables('commonName'))]"
       ]
-    },
-    {
-      "type": "Microsoft.Network/networkSecurityGroups",
-      "name": "[variables('commonName')]",
-      "apiVersion": "2016-03-30",
-      "location": "[variables('location')]",
-      "tags": {},
-      "properties": {
-        "securityRules": [
-          {
-            "name": "[concat(variables('commonName'), '-ssh')]",
-            "properties": {
-              "protocol": "Tcp",
-              "sourcePortRange": "*",
-              "destinationPortRange": "22",
-              "sourceAddressPrefix": "0.0.0.0/0",
-              "destinationAddressPrefix": "VirtualNetwork",
-              "access": "Allow",
-              "priority": 100,
-              "direction": "Inbound"
-            }
-          },
-          {
-            "name": "[concat(variables('commonName'), '-http')]",
-            "properties": {
-              "protocol": "Tcp",
-              "sourcePortRange": "*",
-              "destinationPortRange": "80",
-              "sourceAddressPrefix": "0.0.0.0/0",
-              "destinationAddressPrefix": "VirtualNetwork",
-              "access": "Allow",
-              "priority": 110,
-              "direction": "Inbound"
-            }
-          },
-          {
-            "name": "[concat(variables('commonName'), '-https')]",
-            "properties": {
-              "protocol": "Tcp",
-              "sourcePortRange": "*",
-              "destinationPortRange": "443",
-              "sourceAddressPrefix": "0.0.0.0/0",
-              "destinationAddressPrefix": "VirtualNetwork",
-              "access": "Allow",
-              "priority": 120,
-              "direction": "Inbound"
-            }
-          }
-        ]
-      },
-      "resources": [],
-      "dependsOn": []
     },
     {
       "type": "Microsoft.Network/publicIPAddresses",
