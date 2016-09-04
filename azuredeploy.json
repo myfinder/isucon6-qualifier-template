@@ -197,7 +197,9 @@
         ]
       },
       "resources": [],
-      "dependsOn": []
+      "dependsOn": [
+        "[concat('Microsoft.Network/networkSecurityGroups/', variables('commonName'))]"
+      ]
     },
     {
       "type": "Microsoft.Storage/storageAccounts",
