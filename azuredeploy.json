@@ -8,16 +8,6 @@
        "metadata": {
            "description": "ssh public key for isucon user"
        }
-    },
-    "vmSize": {
-      "defaultValue": "Standard_F2",
-      "type": "String",
-      "allowedValues": [
-        "Standard_F2",
-      ],
-      "metadata": {
-           "description": "VM size"
-      }
     }
   },
   "variables": {
@@ -35,7 +25,7 @@
       "tags": {},
       "properties": {
         "hardwareProfile": {
-          "vmSize": "[parameters('vmSize')]"
+          "vmSize": "Standard_F2"
         },
         "storageProfile": {
           "imageReference": {
