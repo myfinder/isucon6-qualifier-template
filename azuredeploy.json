@@ -99,7 +99,10 @@
         "dnsSettings": {
           "dnsServers": []
         },
-        "enableIPForwarding": false
+        "enableIPForwarding": false,
+        "networkSecurityGroup": {
+          id: "[concat('Microsoft.Network/networkSecurityGroups/', variables('commonName'))]"
+        }
       },
       "resources": [],
       "dependsOn": [
@@ -197,9 +200,7 @@
         ]
       },
       "resources": [],
-      "dependsOn": [
-        "[concat('Microsoft.Network/networkSecurityGroups/', variables('commonName'))]"
-      ]
+      "dependsOn": []
     },
     {
       "type": "Microsoft.Storage/storageAccounts",
