@@ -101,7 +101,7 @@
         },
         "enableIPForwarding": false,
         "networkSecurityGroup": {
-          id: "[concat('Microsoft.Network/networkSecurityGroups/', variables('commonName'))]"
+          id: "[concat(resourceId('Microsoft.Network/networkSecurityGroups/', variables('commonName')))]"
         }
       },
       "resources": [],
