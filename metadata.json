@@ -1,0 +1,7 @@
+{
+  "itemDisplayName": "Create ISUCON6 Qualifier Images",
+  "description": "This template create ISUCON6-qualifier VM,Network,IP,Storage.",
+  "summary": "Create Virtual Machines for ISUCON6-qualifier",
+  "githubUsername": "myfinder",
+  "dateUpdated": "2016-09-04"
+}

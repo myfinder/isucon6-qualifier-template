@@ -1,0 +1,228 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "sshPublicKey": {
+      "defaultValue": null,
+      "type": "String",
+       "metadata": {
+           "description": "ssh public key for isucon user"
+       }
+    },
+    "vmSize": {
+      "defaultValue": "Standard_F2",
+      "type": "String",
+      "allowedValues": [
+        "Standard_F2",
+      ],
+      "metadata": {
+           "description": "VM size"
+      }
+    }
+  },
+  "variables": {
+    "adminUsername": "isucon",
+    "location": "[resourceGroup().location]",
+    "commonName": "isucon6qualifier",
+    "storageAccountsName": "[concat(uniqueString(resourceGroup().id), 'storage')]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "isucon6-qualifier",
+      "apiVersion": "2015-06-15",
+      "location": "[variables('location')]",
+      "tags": {},
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[parameters('vmSize')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "Canonical",
+            "offer": "UbuntuServer",
+            "sku": "16.04.0-LTS",
+            "version": "latest"
+          },
+          "osDisk": {
+            "name": "isucon6-qualifier-os",
+            "createOption": "FromImage",
+            "vhd": {
+              "uri": "[concat('https', '://', variables('storageAccountsName'), '.blob.core.windows.net', '/', variables('commonName'), '/isucon6-qualifier-os.vhd')]"
+            },
+            "caching": "None"
+          }
+        },
+        "osProfile": {
+          "computerName": "isucon6-qualifier",
+          "adminUsername": "[variables('adminUsername')]",
+          "customData": "IyEvYmluL3NoDQplY2hvIHBsZWFzZSB3cml0ZSBpc3Vjb24gc2V0dXAgc2NyaXB0KGluY2x1ZGUgY2FsbCBhbnNpYmxlIHBsYXlib29rKSBoZXJlLg==",
+          "linuxConfiguration": {
+            "disablePasswordAuthentication": true,
+            "ssh": {
+              "publicKeys": [
+                {
+                  "path": "[concat('/home/', variables('adminUsername'), '/.ssh/authorized_keys')]",
+                  "keyData": "[parameters('sshPublicKey')]"
+                }
+              ]
+            }
+          },
+          "secrets": []
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', 'isucon6-qualifier')]"
+            }
+          ]
+        }
+      },
+      "resources": [],
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountsName'))]",
+        "[resourceId('Microsoft.Network/networkInterfaces', 'isucon6-qualifier')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "isucon6-qualifier",
+      "apiVersion": "2016-03-30",
+      "location": "[variables('location')]",
+      "tags": {},
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "[variables('commonName')]",
+            "properties": {
+              "privateIPAddress": "10.0.1.5",
+              "privateIPAllocationMethod": "Dynamic",
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', 'isucon6-qualifier')]"
+              },
+              "subnet": {
+                "id": "[concat(resourceId('Microsoft.Network/virtualNetworks', variables('commonName')), '/subnets/', variables('commonName'))]"
+              }
+            }
+          }
+        ],
+        "dnsSettings": {
+          "dnsServers": []
+        },
+        "enableIPForwarding": false
+      },
+      "resources": [],
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/publicIPAddresses', 'isucon6-qualifier')]",
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('commonName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "name": "[variables('commonName')]",
+      "apiVersion": "2016-03-30",
+      "location": "[variables('location')]",
+      "tags": {},
+      "properties": {
+        "securityRules": [
+          {
+            "name": "[concat(variables('commonName'), '-ssh')]",
+            "properties": {
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "22",
+              "sourceAddressPrefix": "0.0.0.0/0",
+              "destinationAddressPrefix": "VirtualNetwork",
+              "access": "Allow",
+              "priority": 100,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "[concat(variables('commonName'), '-http')]",
+            "properties": {
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "80",
+              "sourceAddressPrefix": "0.0.0.0/0",
+              "destinationAddressPrefix": "VirtualNetwork",
+              "access": "Allow",
+              "priority": 110,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "[concat(variables('commonName'), '-https')]",
+            "properties": {
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "443",
+              "sourceAddressPrefix": "0.0.0.0/0",
+              "destinationAddressPrefix": "VirtualNetwork",
+              "access": "Allow",
+              "priority": 120,
+              "direction": "Inbound"
+            }
+          }
+        ]
+      },
+      "resources": [],
+      "dependsOn": []
+    },
+    {
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "isucon6-qualifier",
+      "apiVersion": "2016-03-30",
+      "location": "[variables('location')]",
+      "tags": {},
+      "properties": {
+        "publicIPAllocationMethod": "Static",
+        "idleTimeoutInMinutes": 4
+      },
+      "resources": [],
+      "dependsOn": []
+    },
+    {
+      "type": "Microsoft.Network/virtualNetworks",
+      "name": "[variables('commonName')]",
+      "apiVersion": "2016-03-30",
+      "location": "[variables('location')]",
+      "tags": {},
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "10.0.0.0/16"
+          ]
+        },
+        "dhcpOptions": {
+          "dnsServers": []
+        },
+        "subnets": [
+          {
+            "name": "[variables('commonName')]",
+            "properties": {
+              "addressPrefix": "10.0.1.0/24"
+            }
+          }
+        ]
+      },
+      "resources": [],
+      "dependsOn": []
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "sku": {
+        "name": "Standard_LRS",
+        "tier": "Standard"
+      },
+      "kind": "Storage",
+      "name": "[variables('storageAccountsName')]",
+      "apiVersion": "2016-01-01",
+      "location": "[variables('location')]",
+      "tags": {},
+      "properties": {},
+      "resources": [],
+      "dependsOn": []
+    }
+  ]
+}
